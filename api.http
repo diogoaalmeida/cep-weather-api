@@ -1,0 +1,8 @@
+### valid cep
+GET http://localhost:8080/weather/01310100
+
+### bad format
+GET http://localhost:8080/weather/123
+
+### cep not found
+GET http://localhost:8080/weather/00000000
