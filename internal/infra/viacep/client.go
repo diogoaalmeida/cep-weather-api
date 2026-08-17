@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -38,11 +39,13 @@ func (c *Client) Find(ctx context.Context, cep string) (usecase.Location, error)
 		return usecase.Location{}, err
 	}
 
+	start := time.Now()
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return usecase.Location{}, err
 	}
 	defer resp.Body.Close()
+	log.Printf("viacep: cep=%s status=%d duration=%s", cep, resp.StatusCode, time.Since(start))
 
 	if resp.StatusCode != http.StatusOK {
 		return usecase.Location{}, fmt.Errorf("viacep: unexpected status %d", resp.StatusCode)
@@ -54,8 +57,10 @@ func (c *Client) Find(ctx context.Context, cep string) (usecase.Location, error)
 	}
 
 	if r.Localidade == "" {
+		log.Printf("viacep: cep=%s not found", cep)
 		return usecase.Location{}, entity.ErrZipcodeNotFound
 	}
 
+	log.Printf("viacep: cep=%s city=%q", cep, r.Localidade)
 	return usecase.Location{City: r.Localidade}, nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -40,11 +41,13 @@ func (c *Client) FindByCity(ctx context.Context, city string) (float64, error) {
 		return 0, err
 	}
 
+	start := time.Now()
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return 0, err
 	}
 	defer resp.Body.Close()
+	log.Printf("weatherapi: city=%q status=%d duration=%s", city, resp.StatusCode, time.Since(start))
 
 	if resp.StatusCode != http.StatusOK {
 		return 0, fmt.Errorf("weatherapi: unexpected status %d", resp.StatusCode)
@@ -55,5 +58,6 @@ func (c *Client) FindByCity(ctx context.Context, city string) (float64, error) {
 		return 0, err
 	}
 
+	log.Printf("weatherapi: city=%q temp_c=%.1f", city, r.Current.TempC)
 	return r.Current.TempC, nil
 }
